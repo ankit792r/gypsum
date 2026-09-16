@@ -42,8 +42,8 @@ app/build/
 *.dylib
 *.dll
 
-# Generated hosted sample binaries (built by :app:compileSampleBinaries)
-app/src/main/assets/bundled/**/bin/**/main
+# Generated hosted sample libraries (built by :app:compileSampleBinaries)
+app/src/main/assets/bundled/**/bin/**/*.so
 
 # Local sample builds from samples/build-android.sh
 samples/**/*-arm64-v8a

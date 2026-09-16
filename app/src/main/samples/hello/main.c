@@ -1,8 +1,9 @@
 #include <stdio.h>
 
-int main(int argc, char *argv[]) {
-    printf("Hello from Gypsum hosted binary!\n");
-    printf("Compiled for Android / Bionic.\n");
+__attribute__((visibility("default")))
+int gypsum_main(int argc, char *argv[]) {
+    printf("Hello from Gypsum hosted app!\n");
+    printf("Loaded via dlopen (Android Bionic).\n");
 
     for (int i = 1; i < argc; i++) {
         printf("argv[%d] = %s\n", i, argv[i]);

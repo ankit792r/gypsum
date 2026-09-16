@@ -34,7 +34,7 @@ class AppRepository(private val context: Context) {
         val manifest = parseManifest(JSONObject(manifestJson), bundledId)
 
         val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
-        val assetBinary = "bundled/$bundledId/bin/$abi/main"
+        val assetBinary = "bundled/$bundledId/bin/$abi/libhello_cli.so"
         val installDir = File(appsRoot, manifest.id)
 
         if (installDir.exists()) {
@@ -50,8 +50,6 @@ class AppRepository(private val context: Context) {
                 input.copyTo(output)
             }
         }
-
-        ProcessRunner.makeExecutable(entryFile)
 
         File(installDir, "manifest.json").writeText(manifestJson)
         return manifest.copy(installDir = installDir)
@@ -74,7 +72,7 @@ class AppRepository(private val context: Context) {
         val installDir = File(appsRoot, id)
         installDir.mkdirs()
 
-        val entryRelative = "bin/main"
+        val entryRelative = "bin/lib${slugFromName(name)}.so"
         val entryFile = File(installDir, entryRelative)
         entryFile.parentFile?.mkdirs()
 
@@ -83,8 +81,6 @@ class AppRepository(private val context: Context) {
                 input.copyTo(output)
             }
         } ?: throw IllegalStateException("Unable to read selected file")
-
-        ProcessRunner.makeExecutable(entryFile)
 
         val manifest = HostedApp(
             id = id,
@@ -145,11 +141,13 @@ class AppRepository(private val context: Context) {
     }
 
     private fun generateId(name: String): String {
-        val slug = name.lowercase()
+        return "${slugFromName(name)}-${UUID.randomUUID().toString().take(8)}"
+    }
+
+    private fun slugFromName(name: String): String {
+        return name.lowercase()
             .replace(Regex("[^a-z0-9]+"), "-")
             .trim('-')
             .ifBlank { "app" }
-
-        return "$slug-${UUID.randomUUID().toString().take(8)}"
     }
 }

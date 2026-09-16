@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a C source file into an Android executable for Gypsum import.
+# Build a hosted Gypsum app (.so with gypsum_main) for Android import.
 # Usage: ./samples/build-android.sh path/to/app.c [arm64-v8a|x86_64]
 
 set -euo pipefail
@@ -19,6 +19,7 @@ case "$ABI" in
   *) echo "Unsupported ABI: $ABI" >&2; exit 1 ;;
 esac
 
-OUT="${SOURCE%.c}-$ABI"
-"$CLANG" --target="$TRIPLE" -fPIE -pie -O2 -o "$OUT" "$SOURCE"
+OUT="${SOURCE%.c}-$ABI.so"
+"$CLANG" --target="$TRIPLE" -shared -fPIC -O2 -o "$OUT" "$SOURCE"
 echo "Built $OUT"
+echo "Export gypsum_main() from your source file before importing into Gypsum."

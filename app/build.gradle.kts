@@ -87,7 +87,7 @@ tasks.register("compileSampleBinaries") {
     val helloSourceFile = layout.projectDirectory.file("src/main/samples/hello/main.c").asFile
     val localPropertiesFile = rootProject.layout.projectDirectory.file("local.properties").asFile
     val outputByAbi = sampleAbis.keys.associateWith { abi ->
-        layout.projectDirectory.file("src/main/assets/bundled/hello-cli/bin/$abi/main").asFile
+        layout.projectDirectory.file("src/main/assets/bundled/hello-cli/bin/$abi/libhello_cli.so").asFile
     }
 
     inputs.file(helloSourceFile)
@@ -118,8 +118,8 @@ tasks.register("compileSampleBinaries") {
             val process = ProcessBuilder(
                 clang.absolutePath,
                 "--target=$triple",
-                "-fPIE",
-                "-pie",
+                "-shared",
+                "-fPIC",
                 "-O2",
                 "-o",
                 outFile.absolutePath,

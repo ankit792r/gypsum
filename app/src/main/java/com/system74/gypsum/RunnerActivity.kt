@@ -83,8 +83,8 @@ private fun CliRunnerScreen(appId: String) {
             exitCode = result.exitCode
         } catch (e: Exception) {
             output += "\n\nError: ${e.message ?: e.javaClass.simpleName}"
-            output += "\n\nTip: Binary must be a PIE executable built for this device's ABI"
-            output += "\n(arm64-v8a on phone, x86_64 on emulator)."
+            output += "\n\nTip: Import a .so built for Android/Bionic with exported gypsum_main()."
+            output += "\nSee samples/build-android.sh or use Zig build-lib for arm64-linux-android."
             exitCode = -1
         }
     }
