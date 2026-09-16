@@ -1,0 +1,7 @@
+{
+  "id": "hello-cli",
+  "name": "Hello CLI",
+  "version": "1.0.0",
+  "entry": "bin/main",
+  "kind": "cli"
+}
