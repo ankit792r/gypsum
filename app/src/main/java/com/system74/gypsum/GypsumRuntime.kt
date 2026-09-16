@@ -1,54 +1,42 @@
 package com.system74.gypsum
 
-import com.v7878.foreign.Arena
-import com.v7878.foreign.FunctionDescriptor
-import com.v7878.foreign.Linker
-import com.v7878.foreign.MemoryLayout
-import com.v7878.foreign.MemorySegment
-import com.v7878.foreign.SymbolLookup
-import com.v7878.foreign.ValueLayout.ADDRESS
-import com.v7878.foreign.ValueLayout.JAVA_BYTE
-import com.v7878.foreign.ValueLayout.JAVA_INT
-import java.lang.invoke.MethodHandle
+import android.util.Log
 
 object GypsumRuntime {
-    private val rtContextLayout = MemoryLayout.structLayout(
-        JAVA_INT.withName("version"),
-        JAVA_INT.withName("capabilities"),
-    )
+    private const val TAG = "GypsumRuntime"
 
-    private val cStringLayout = MemoryLayout.sequenceLayout(Long.MAX_VALUE, JAVA_BYTE)
+    @Volatile
+    private var cachedVersion: String? = null
 
-    private val rtInit: MethodHandle
-    private val rtVersion: MethodHandle
-
-    init {
-        System.loadLibrary("gyruntime")
-
-        val linker = Linker.nativeLinker()
-        val lookup = SymbolLookup.loaderLookup()
-
-        rtInit = linker.downcallHandle(
-            lookup.findOrThrow("rt_init"),
-            FunctionDescriptor.of(JAVA_INT, ADDRESS.withTargetLayout(rtContextLayout)),
-        )
-
-        rtVersion = linker.downcallHandle(
-            lookup.findOrThrow("rt_version"),
-            FunctionDescriptor.of(ADDRESS.withTargetLayout(cStringLayout)),
-        )
+    /**
+     * Must be called on the main thread (e.g. from [Application.onCreate]).
+     * PanamaPort arenas and downcall handles are thread-confined.
+     */
+    fun initialize() {
+        cachedVersion = loadVersion()
     }
 
     fun getVersion(): String {
+        cachedVersion?.let { return it }
+        return loadVersion().also { cachedVersion = it }
+    }
+
+    private fun loadVersion(): String {
+        checkMainThread()
         return try {
-            Arena.ofConfined().use { arena ->
-                val ctx = arena.allocate(rtContextLayout)
-                rtInit.invoke(ctx)
-                val versionPtr = rtVersion.invoke() as MemorySegment
-                versionPtr.getString(0)
-            }
+            GypsumNative.getVersion()
         } catch (e: Throwable) {
+            Log.e(TAG, "FFM call failed", e)
             throw RuntimeException("Failed to call native runtime via FFM", e)
+        }
+    }
+
+    private fun checkMainThread() {
+        val looper = android.os.Looper.myLooper()
+        if (looper != android.os.Looper.getMainLooper()) {
+            throw IllegalStateException(
+                "GypsumRuntime must be used on the main thread (PanamaPort FFM is thread-confined)",
+            )
         }
     }
 }

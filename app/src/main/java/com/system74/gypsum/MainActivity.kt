@@ -17,10 +17,7 @@ import com.system74.gypsum.ui.HomeScreen
 import com.system74.gypsum.ui.HomeViewModel
 import com.system74.gypsum.ui.ImportBinaryDialog
 import com.system74.gypsum.ui.theme.GypsumTheme
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import android.util.Log
 
 class MainActivity : ComponentActivity() {
     private val viewModel: HomeViewModel by viewModels()
@@ -49,12 +46,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        lifecycleScope.launch {
-            val version = withContext(Dispatchers.Default) {
-                GypsumRuntime.getVersion()
+        val runtimeVersion = runCatching { GypsumRuntime.getVersion() }
+            .onFailure { error ->
+                Log.e(TAG, "Unable to read runtime version", error)
             }
-            viewModel.setRuntimeVersion(version)
-        }
+            .getOrDefault("unknown")
+        viewModel.setRuntimeVersion(runtimeVersion)
 
         setContent {
             GypsumTheme {
@@ -98,5 +95,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_APP_ID = "app_id"
+        private const val TAG = "MainActivity"
     }
 }

@@ -66,20 +66,27 @@ private fun CliRunnerScreen(appId: String) {
         title = app.name
         output = "$ ${app.executable.name}\n"
 
-        val result = withContext(Dispatchers.IO) {
-            ProcessRunner.run(
-                executable = app.executable,
-                workingDir = app.installDir,
-                onOutput = null,
-            )
-        }
+        try {
+            val result = withContext(Dispatchers.IO) {
+                ProcessRunner.run(
+                    executable = app.executable,
+                    workingDir = app.installDir,
+                    onOutput = null,
+                )
+            }
 
-        output += result.output
-        if (result.output.isNotEmpty()) {
-            output += "\n"
+            output += result.output
+            if (result.output.isNotEmpty()) {
+                output += "\n"
+            }
+            output += "\n[exit ${result.exitCode}]"
+            exitCode = result.exitCode
+        } catch (e: Exception) {
+            output += "\n\nError: ${e.message ?: e.javaClass.simpleName}"
+            output += "\n\nTip: Binary must be a PIE executable built for this device's ABI"
+            output += "\n(arm64-v8a on phone, x86_64 on emulator)."
+            exitCode = -1
         }
-        output += "\n[exit ${result.exitCode}]"
-        exitCode = result.exitCode
     }
 
     Scaffold(
