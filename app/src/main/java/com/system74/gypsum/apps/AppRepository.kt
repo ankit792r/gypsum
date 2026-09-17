@@ -2,7 +2,6 @@ package com.system74.gypsum.apps
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import org.json.JSONObject
 import java.io.File
 import java.util.UUID
@@ -26,45 +25,6 @@ class AppRepository(private val context: Context) {
 
     fun getApp(appId: String): HostedApp? {
         return readApp(File(appsRoot, appId))
-    }
-
-    fun installBundled(bundledId: String): HostedApp {
-        val manifestAsset = "bundled/$bundledId/manifest.json"
-        val manifestJson = context.assets.open(manifestAsset).bufferedReader().use { it.readText() }
-        val manifest = parseManifest(JSONObject(manifestJson), bundledId)
-
-        val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
-        val assetBinary = "bundled/$bundledId/bin/$abi/libhello_cli.so"
-        val installDir = File(appsRoot, manifest.id)
-
-        if (installDir.exists()) {
-            installDir.deleteRecursively()
-        }
-        installDir.mkdirs()
-
-        val entryFile = File(installDir, manifest.entry)
-        entryFile.parentFile?.mkdirs()
-
-        context.assets.open(assetBinary).use { input ->
-            entryFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
-        }
-
-        File(installDir, "manifest.json").writeText(manifestJson)
-        return manifest.copy(installDir = installDir)
-    }
-
-    fun installBundledIfMissing(bundledId: String): HostedApp? {
-        val existing = getApp(bundledId)
-        if (existing != null) {
-            return existing
-        }
-        return try {
-            installBundled(bundledId)
-        } catch (_: Exception) {
-            null
-        }
     }
 
     fun installFromUri(uri: Uri, name: String, kind: AppKind = AppKind.CLI): HostedApp {

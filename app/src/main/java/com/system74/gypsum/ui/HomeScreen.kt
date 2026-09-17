@@ -17,8 +17,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -48,13 +46,11 @@ import com.system74.gypsum.apps.HostedApp
 fun HomeScreen(
     uiState: HomeUiState,
     onRunApp: (HostedApp) -> Unit,
-    onInstallSample: () -> Unit,
     onImportBinary: () -> Unit,
     onUninstall: (String) -> Unit,
     onDismissMessage: () -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    var fabMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.message) {
         uiState.message?.let { message ->
@@ -80,29 +76,8 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            Box {
-                FloatingActionButton(onClick = { fabMenuExpanded = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Install")
-                }
-                DropdownMenu(
-                    expanded = fabMenuExpanded,
-                    onDismissRequest = { fabMenuExpanded = false },
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Install sample (Hello CLI)") },
-                        onClick = {
-                            fabMenuExpanded = false
-                            onInstallSample()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Import binary…") },
-                        onClick = {
-                            fabMenuExpanded = false
-                            onImportBinary()
-                        },
-                    )
-                }
+            FloatingActionButton(onClick = onImportBinary) {
+                Icon(Icons.Default.Add, contentDescription = "Import binary")
             }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -124,7 +99,6 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    onInstallSample = onInstallSample,
                     onImportBinary = onImportBinary,
                 )
             }
@@ -153,7 +127,6 @@ fun HomeScreen(
 @Composable
 private fun EmptyAppsState(
     modifier: Modifier = Modifier,
-    onInstallSample: () -> Unit,
     onImportBinary: () -> Unit,
 ) {
     Column(
@@ -162,17 +135,14 @@ private fun EmptyAppsState(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "No hosted binaries installed",
+            text = "No hosted apps installed",
             style = MaterialTheme.typography.titleMedium,
         )
         Text(
-            text = "Install the bundled Hello CLI sample or import an Android ARM64 executable.",
+            text = "Import an Android .so library that exports gypsum_main().",
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
         )
-        TextButton(onClick = onInstallSample) {
-            Text("Install Hello CLI")
-        }
         TextButton(onClick = onImportBinary) {
             Text("Import binary")
         }

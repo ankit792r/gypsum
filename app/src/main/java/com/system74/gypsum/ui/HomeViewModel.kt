@@ -29,20 +29,19 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        refresh(installSamples = true)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                repository.uninstall("hello-cli")
+            }
+            refresh()
+        }
     }
 
-    fun refresh(installSamples: Boolean = false) {
+    fun refresh() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, message = null) }
 
             try {
-                withContext(Dispatchers.IO) {
-                    if (installSamples) {
-                        repository.installBundledIfMissing("hello-cli")
-                    }
-                }
-
                 val apps = withContext(Dispatchers.IO) { repository.listApps() }
                 _uiState.update {
                     it.copy(
@@ -57,20 +56,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         message = e.message ?: "Failed to load apps",
                     )
                 }
-            }
-        }
-    }
-
-    fun installBundled(bundledId: String) {
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    repository.installBundled(bundledId)
-                }
-                refresh()
-                showMessage("Installed $bundledId")
-            } catch (e: Exception) {
-                showMessage(e.message ?: "Install failed")
             }
         }
     }

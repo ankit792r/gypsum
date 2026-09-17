@@ -61,7 +61,6 @@ class MainActivity : ComponentActivity() {
                 HomeScreen(
                     uiState = uiState,
                     onRunApp = ::launchApp,
-                    onInstallSample = { viewModel.installBundled("hello-cli") },
                     onImportBinary = {
                         importLauncher.launch(arrayOf("application/octet-stream", "*/*"))
                     },

@@ -84,7 +84,7 @@ private fun CliRunnerScreen(appId: String) {
         } catch (e: Exception) {
             output += "\n\nError: ${e.message ?: e.javaClass.simpleName}"
             output += "\n\nTip: Import a .so built for Android/Bionic with exported gypsum_main()."
-            output += "\nSee samples/build-android.sh or use Zig build-lib for arm64-linux-android."
+            output += "\nUse zig build-lib -target aarch64-linux-android31 -dynamic for ARM64 devices."
             exitCode = -1
         }
     }
