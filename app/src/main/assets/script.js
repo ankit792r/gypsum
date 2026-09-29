@@ -28,3 +28,18 @@ button.addEventListener("click", function () {
 
 
 });
+
+function sendToAndroid() {
+
+    const message = {
+        type: "HELLO",
+        data: {
+            name: "John",
+            age: 25
+        }
+    };
+
+    AndroidBridge.postMessage(
+        JSON.stringify(message)
+    );
+}

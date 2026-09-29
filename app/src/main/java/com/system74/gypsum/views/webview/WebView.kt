@@ -9,9 +9,9 @@ import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.webkit.WebViewAssetLoader
-import androidx.core.net.toUri
+import androidx.webkit.WebViewCompat.addWebMessageListener
 
-@SuppressLint("SetJavaScriptEnabled")
+@SuppressLint("SetJavaScriptEnabled", "RequiresFeature")
 @Composable
 fun WebviewComposable() {
     AndroidView(
@@ -23,7 +23,7 @@ fun WebviewComposable() {
                 )
                 .build()
 
-            WebView(context).apply {
+            val webviews = WebView(context).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
 
@@ -47,9 +47,22 @@ fun WebviewComposable() {
                     }
 
                 }
-
-                loadUrl("https://appassets.androidplatform.net/assets/index.html")
             }
+
+            addWebMessageListener(
+                webviews,
+                "AndroidBridge",
+                setOf("https://appassets.androidplatform.net")
+            ) { view, message, sourceOrigin, isMainFrame, replyProxy ->
+                run {
+                    println(message.data)
+                    replyProxy.postMessage(  """{"status":"success","message":"Hello from Kotlin"}""")
+                }
+            }
+
+            webviews.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+
+            webviews
         },
     )
 
