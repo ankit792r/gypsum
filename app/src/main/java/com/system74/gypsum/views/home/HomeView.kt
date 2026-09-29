@@ -6,12 +6,24 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.system74.gypsum.views.webview.WebviewComposable
+import com.system74.gypsum.views.webview.WebViewBridge
+import org.json.JSONObject
 
 @Composable
 fun HomeView() {
     Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
         Text("Home View", modifier = Modifier.padding(paddingValues))
-        WebviewComposable()
+
+        WebViewBridge.onMessage { type, data ->
+            run {
+                println(type)
+                println(data)
+                WebViewBridge.postMessage("PONG", JSONObject("""{}"""))
+            }
+        }
+
+
+
+        WebViewBridge.WebViewComposable()
     }
 }

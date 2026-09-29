@@ -1,53 +1,33 @@
-console.log("JavaScript file loaded!");
+const NativeBridge = {
+
+postMessage(type, data = {}) {
+
+    window.AndroidBridge.postMessage(
+        JSON.stringify({
+            type: type,
+            data: data
+        })
+    );
+},
+
+onMessage(callback) {
+    window.addEventListener("message", function (event) {
+        callback(event)
+    });
+}
+};
+
 
 document.addEventListener("DOMContentLoaded", function () {
-
-console.log("DOM loaded!");
-
-const status = document.getElementById("status");
-const button = document.getElementById("testButton");
-const result = document.getElementById("result");
-
-// This proves that JavaScript executed
-status.innerText = "✅ JavaScript is working!";
-
-status.style.background = "#d4edda";
-status.style.color = "#155724";
-
-button.addEventListener("click", function () {
-
-    console.log("Button clicked!");
-
-    result.innerText =
-        "🎉 JavaScript button click is working!\n\n" +
-        "Time: " + new Date().toLocaleTimeString();
-
-    result.style.background = "#d4edda";
-    result.style.color = "#155724";
+NativeBridge.onMessage(function(message) {
+    console.log("got message from kotlin", message)
 });
 
+NativeBridge.postMessage(
+    "Ping",
+    {
+        message: "JS Loaded"
+    }
+);
 
-});
-
-function sendToAndroid() {
-
-    const message = {
-        type: "HELLO",
-        data: {
-            name: "John",
-            age: 25
-        }
-    };
-
-    AndroidBridge.postMessage(
-        JSON.stringify(message)
-    );
-}
-
-window.addEventListener("message", function(event) {
-    console.log("Android -> JS:", event.data);
-});
-
-AndroidBridge.onmessage = function(event) {
-    console.log("Android -> ---------> JS:", event.data);
-};
+})
