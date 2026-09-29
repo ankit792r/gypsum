@@ -18,10 +18,13 @@ fun WebviewComposable() {
                settings.setSupportZoom(false)
 
                webViewClient = WebViewClient()
+
+               loadUrl("file:///android_asset/index.html")
            }
         },
         update = {
-            it.loadUrl("https://google.com")
+            // it.loadUrl("https://google.com")
+            // it.loadUrl("file:///android_asset/index.html")
         }
     )
 
