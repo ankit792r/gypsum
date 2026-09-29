@@ -1,68 +1,65 @@
 package com.system74.gypsum.views.webview
 
 import android.annotation.SuppressLint
-import android.webkit.RenderProcessGoneDetail
+import android.net.Uri
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.webkit.JavaScriptReplyProxy
+import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewAssetLoader
-import androidx.webkit.WebViewCompat.addWebMessageListener
+import androidx.webkit.WebViewCompat
 
 @SuppressLint("SetJavaScriptEnabled", "RequiresFeature")
 @Composable
 fun WebviewComposable() {
     AndroidView(
         factory = { context ->
-            val assetsLoader = WebViewAssetLoader.Builder()
+            val assetLoader = WebViewAssetLoader.Builder()
                 .addPathHandler(
                     "/assets/",
                     WebViewAssetLoader.AssetsPathHandler(context)
                 )
                 .build()
 
-            val webviews = WebView(context).apply {
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
+            val webView = WebView(context)
 
-                settings.loadWithOverviewMode = true
-                settings.useWideViewPort = true
-                settings.setSupportZoom(false)
+            webView.settings.javaScriptEnabled = true
+            webView.settings.domStorageEnabled = true
 
-                webViewClient = object : WebViewClient() {
-                    override fun shouldInterceptRequest(
-                        view: WebView,
-                        request: WebResourceRequest
-                    ): WebResourceResponse? {
-                        return assetsLoader.shouldInterceptRequest(request.url)
-                    }
+            webView.webViewClient = object : WebViewClient() {
 
-                    override fun onRenderProcessGone(
-                        view: WebView?,
-                        detail: RenderProcessGoneDetail?
-                    ): Boolean {
-                        return super.onRenderProcessGone(view, detail)
-                    }
-
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    request: WebResourceRequest
+                ): WebResourceResponse? {
+                    return assetLoader.shouldInterceptRequest(request.url)
                 }
             }
 
-            addWebMessageListener(
-                webviews,
+            WebViewCompat.addWebMessageListener(
+                webView,
                 "AndroidBridge",
                 setOf("https://appassets.androidplatform.net")
             ) { view, message, sourceOrigin, isMainFrame, replyProxy ->
-                run {
-                    println(message.data)
-                    replyProxy.postMessage(  """{"status":"success","message":"Hello from Kotlin"}""")
-                }
+                println(
+                    "Received from JS: ${message.data}"
+                )
+
+                // Reply directly to the JavaScript caller
+                replyProxy.postMessage(
+                    """{"type":"HELLO_RESPONSE","message":"Hello from Kotlin"}"""
+                )
             }
 
-            webviews.loadUrl("https://appassets.androidplatform.net/assets/index.html")
+            webView.loadUrl(
+                "https://appassets.androidplatform.net/assets/index.html"
+            )
 
-            webviews
+            webView
         },
     )
 

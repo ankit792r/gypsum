@@ -43,3 +43,11 @@ function sendToAndroid() {
         JSON.stringify(message)
     );
 }
+
+window.addEventListener("message", function(event) {
+    console.log("Android -> JS:", event.data);
+});
+
+AndroidBridge.onmessage = function(event) {
+    console.log("Android -> ---------> JS:", event.data);
+};
